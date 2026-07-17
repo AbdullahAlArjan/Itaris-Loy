@@ -1,34 +1,98 @@
+using Itaris.Api.Middleware;
+using Itaris.Infrastructure;
+using Itaris.Infrastructure.Observability;
+using Itaris.Infrastructure.Sms;
+using Itaris.Modules.Customers.PublicApi;
+using Itaris.Modules.Identity.PublicApi;
+using Itaris.Modules.Loyalty.PublicApi;
+using Itaris.Modules.Merchants.PublicApi;
+using Itaris.Modules.Ops.PublicApi;
+using Itaris.Modules.Reporting.PublicApi;
+using Itaris.Modules.Rewards.PublicApi;
+using Itaris.Modules.Transactions.PublicApi;
+using Itaris.SharedKernel;
+using Microsoft.OpenApi;
+using Serilog;
+
+Log.Logger = new LoggerConfiguration().ConfigureItarisSerilog().CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Host.UseSerilog((context, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ConfigureItarisSerilog());
+
+var connectionString = builder.Configuration.GetConnectionString("Postgres")
+    ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
+
+// Cross-cutting infrastructure
+builder.Services.AddItarisOpenTelemetry();
+builder.Services.AddSingleton<IClock, SystemClock>();
+builder.Services.AddSingleton<ISmsProvider, FakeSmsProvider>();
+
+// Modules (composition root only — doc 04 Part 7)
+builder.Services.AddIdentityModule(connectionString);
+builder.Services.AddCustomersModule();
+builder.Services.AddMerchantsModule();
+builder.Services.AddLoyaltyModule();
+builder.Services.AddTransactionsModule();
+builder.Services.AddRewardsModule();
+builder.Services.AddOpsModule();
+builder.Services.AddReportingModule();
+
+// OpenAPI with the three doc 05 audiences as JWT bearer schemes
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) =>
+    {
+        document.Info.Title = "Itaris API";
+        document.Info.Version = "v1";
+        var components = document.Components ??= new OpenApiComponents();
+        var securitySchemes = components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        foreach (var audience in (string[])["customer", "staff", "admin"])
+        {
+            securitySchemes[$"bearer-{audience}"] = new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = $"JWT for the '{audience}' audience (doc 05 global conventions).",
+            };
+        }
+
+        return Task.CompletedTask;
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
+// Dev/local convenience only: apply pending migrations on startup. Production applies
+// migrations as a deploy step (doc 04 operational posture), not at boot.
+if (app.Environment.IsDevelopment())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    await app.Services.MigrateIdentityAsync();
+}
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-});
+app.UseMiddleware<ErrorEnvelopeMiddleware>();
+app.UseMiddleware<IdempotencyMiddleware>();
+app.UseSerilogRequestLogging();
+
+app.MapOpenApi();
+app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Itaris API v1"));
+
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
+    .WithSummary("Liveness probe");
+
+app.MapIdentityEndpoints();
+app.MapCustomersEndpoints();
+app.MapMerchantsEndpoints();
+app.MapLoyaltyEndpoints();
+app.MapTransactionsEndpoints();
+app.MapRewardsEndpoints();
+app.MapOpsEndpoints();
+app.MapReportingEndpoints();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+/// <summary>Exposed for WebApplicationFactory in integration tests.</summary>
+public partial class Program;

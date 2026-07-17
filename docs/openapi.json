@@ -1,0 +1,134 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Itaris API",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Itaris.Api"
+        ],
+        "summary": "Liveness probe",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v1/auth/otp/request": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Request a login OTP (doc 05 A1)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestOtpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestOtpResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RequestOtpRequest": {
+        "required": [
+          "phoneNumber",
+          "purpose"
+        ],
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestOtpResponse": {
+        "required": [
+          "challengeId",
+          "expiresInSeconds",
+          "resendAfterSeconds"
+        ],
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresInSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "resendAfterSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearer-customer": {
+        "type": "http",
+        "description": "JWT for the 'customer' audience (doc 05 global conventions).",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "bearer-staff": {
+        "type": "http",
+        "description": "JWT for the 'staff' audience (doc 05 global conventions).",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "bearer-admin": {
+        "type": "http",
+        "description": "JWT for the 'admin' audience (doc 05 global conventions).",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Itaris.Api"
+    },
+    {
+      "name": "Authentication"
+    }
+  ]
+}
