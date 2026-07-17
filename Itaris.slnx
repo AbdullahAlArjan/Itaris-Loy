@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Itaris.Api/Itaris.Api.csproj" />
+    <Project Path="src/Itaris.Infrastructure/Itaris.Infrastructure.csproj" />
+    <Project Path="src/Itaris.SharedKernel/Itaris.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/">
+    <Project Path="src/Modules/Itaris.Modules.Customers/Itaris.Modules.Customers.csproj" />
+    <Project Path="src/Modules/Itaris.Modules.Identity/Itaris.Modules.Identity.csproj" />
+    <Project Path="src/Modules/Itaris.Modules.Loyalty/Itaris.Modules.Loyalty.csproj" />
+    <Project Path="src/Modules/Itaris.Modules.Merchants/Itaris.Modules.Merchants.csproj" />
+    <Project Path="src/Modules/Itaris.Modules.Ops/Itaris.Modules.Ops.csproj" />
+    <Project Path="src/Modules/Itaris.Modules.Reporting/Itaris.Modules.Reporting.csproj" />
+    <Project Path="src/Modules/Itaris.Modules.Rewards/Itaris.Modules.Rewards.csproj" />
+    <Project Path="src/Modules/Itaris.Modules.Transactions/Itaris.Modules.Transactions.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Itaris.Tests.Architecture/Itaris.Tests.Architecture.csproj" />
+    <Project Path="tests/Itaris.Tests.Integration/Itaris.Tests.Integration.csproj" />
+    <Project Path="tests/Itaris.Tests.Unit/Itaris.Tests.Unit.csproj" />
+  </Folder>
+</Solution>

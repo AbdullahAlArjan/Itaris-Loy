@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Itaris.SharedKernel\Itaris.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\Itaris.Infrastructure\Itaris.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
