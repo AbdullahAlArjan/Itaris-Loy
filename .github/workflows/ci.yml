@@ -22,13 +22,32 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Unit tests
-        run: dotnet test tests/Itaris.Tests.Unit --no-build --configuration Release
+        run: |
+          set -o pipefail
+          dotnet test tests/Itaris.Tests.Unit --no-build --configuration Release 2>&1 | tee -a test-output.log
 
       - name: Architecture tests
-        run: dotnet test tests/Itaris.Tests.Architecture --no-build --configuration Release
+        run: |
+          set -o pipefail
+          dotnet test tests/Itaris.Tests.Architecture --no-build --configuration Release 2>&1 | tee -a test-output.log
 
       - name: Integration tests (Testcontainers PostgreSQL)
-        run: dotnet test tests/Itaris.Tests.Integration --no-build --configuration Release
+        run: |
+          set -o pipefail
+          dotnet test tests/Itaris.Tests.Integration --no-build --configuration Release 2>&1 | tee -a test-output.log
+
+      # Failure detail goes to the run summary, which is readable on a public repo without
+      # signing in (job logs are not) — keeps triage possible from the run page alone.
+      - name: Publish failure details to run summary
+        if: failure()
+        run: |
+          {
+            echo '## Test failure details'
+            echo '```'
+            grep -E "^\s*(Failed|Error Message|Stack Trace|Assert\.|\S+\.\S+ \[FAIL\])" -A 12 test-output.log | head -300 \
+              || tail -150 test-output.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   docker-image:
     runs-on: ubuntu-latest

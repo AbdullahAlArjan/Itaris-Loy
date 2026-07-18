@@ -8,7 +8,8 @@ namespace Itaris.Tests.Integration;
 /// Phase 2 Definition of Done (doc 06): admin creates merchant → owner login → invite staff →
 /// staff PIN login → a forbidden action returns 403 with the FORBIDDEN code.
 /// </summary>
-public class MerchantAccessFlowTests(ApiFixture fixture) : IClassFixture<ApiFixture>
+[Collection(ApiCollection.Name)]
+public class MerchantAccessFlowTests(ApiFixture fixture)
 {
     private sealed record TokenOnly(string AccessToken, string RefreshToken, int ExpiresIn);
     private sealed record CreateMerchantResult(Guid MerchantId, string Code, Guid OwnerUserId);

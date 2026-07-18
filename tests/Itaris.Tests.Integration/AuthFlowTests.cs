@@ -7,7 +7,8 @@ namespace Itaris.Tests.Integration;
 /// Customer auth core (doc 05 A1–A4): request OTP → verify → rotate refresh → reuse detection.
 /// Runs against a real PostgreSQL container; the Development dev-bypass OTP code is used.
 /// </summary>
-public class AuthFlowTests(ApiFixture fixture) : IClassFixture<ApiFixture>
+[Collection(ApiCollection.Name)]
+public class AuthFlowTests(ApiFixture fixture)
 {
     private sealed record VerifyResponse(string AccessToken, string RefreshToken, int ExpiresIn, bool IsNewUser, CustomerDto Customer);
     private sealed record CustomerDto(Guid Id, string? FirstName, string PhoneNumber);

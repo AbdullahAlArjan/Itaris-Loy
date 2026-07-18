@@ -7,7 +7,8 @@ namespace Itaris.Tests.Integration;
 /// Phase 1 walking-skeleton verification (doc 06): HTTP → validation → handler →
 /// EF Core → real PostgreSQL, response shaped per doc 05 A1.
 /// </summary>
-public class RequestOtpEndpointTests(ApiFixture fixture) : IClassFixture<ApiFixture>
+[Collection(ApiCollection.Name)]
+public class RequestOtpEndpointTests(ApiFixture fixture)
 {
     private sealed record OtpResponse(Guid ChallengeId, int ExpiresInSeconds, int ResendAfterSeconds);
     private sealed record ErrorBody(ErrorEnvelope Error);
