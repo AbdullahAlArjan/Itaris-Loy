@@ -16,6 +16,13 @@ public sealed class RefreshToken : Entity
 
     public required string TokenHash { get; set; }
 
+    /// <summary>
+    /// Serialized snapshot of the access-token claims (audience, merchant/staff/branch/permissions)
+    /// so rotation can remint without calling other modules. A denormalized auth cache owned by
+    /// Identity; permission changes take effect on next full login (bounded staleness, documented).
+    /// </summary>
+    public required string ClaimsJson { get; set; }
+
     /// <summary>Rotation family id; every rotation keeps the family, reuse detection revokes by it.</summary>
     public Guid FamilyId { get; set; }
 

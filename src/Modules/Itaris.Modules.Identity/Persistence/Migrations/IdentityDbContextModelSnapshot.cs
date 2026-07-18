@@ -131,6 +131,11 @@ namespace Itaris.Modules.Identity.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("ClaimsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("claims");
+
                     b.Property<DateTimeOffset?>("ConsumedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("consumed_at");
@@ -199,6 +204,14 @@ namespace Itaris.Modules.Identity.Persistence.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("email");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failed_login_attempts");
+
+                    b.Property<DateTimeOffset?>("LockedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("locked_until");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
@@ -207,6 +220,12 @@ namespace Itaris.Modules.Identity.Persistence.Migrations
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)")
                         .HasColumnName("phone_number");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -225,6 +244,10 @@ namespace Itaris.Modules.Identity.Persistence.Migrations
                         .HasColumnName("xmin");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("email IS NOT NULL");
 
                     b.HasIndex("PhoneNumber")
                         .IsUnique()

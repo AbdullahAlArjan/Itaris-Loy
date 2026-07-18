@@ -9,6 +9,9 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.10" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
 
+    <!-- Auth -->
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
+
     <!-- API -->
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
     <!-- Transitive pin: Microsoft.AspNetCore.OpenApi 10.0.10 pulls 2.0.0, which has GHSA-v5pm-xwqc-g5wc -->

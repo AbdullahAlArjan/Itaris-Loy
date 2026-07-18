@@ -1,5 +1,6 @@
 using Itaris.Api.Middleware;
 using Itaris.Infrastructure;
+using Itaris.Infrastructure.Auth;
 using Itaris.Infrastructure.Observability;
 using Itaris.Infrastructure.Sms;
 using Itaris.Modules.Customers.PublicApi;
@@ -27,13 +28,14 @@ var connectionString = builder.Configuration.GetConnectionString("Postgres")
 
 // Cross-cutting infrastructure
 builder.Services.AddItarisOpenTelemetry();
+builder.Services.AddItarisAuth(builder.Configuration);
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddSingleton<ISmsProvider, FakeSmsProvider>();
 
 // Modules (composition root only — doc 04 Part 7)
 builder.Services.AddIdentityModule(connectionString);
 builder.Services.AddCustomersModule();
-builder.Services.AddMerchantsModule();
+builder.Services.AddMerchantsModule(connectionString);
 builder.Services.AddLoyaltyModule();
 builder.Services.AddTransactionsModule();
 builder.Services.AddRewardsModule();
@@ -70,12 +72,16 @@ var app = builder.Build();
 // migrations as a deploy step (doc 04 operational posture), not at boot.
 if (app.Environment.IsDevelopment())
 {
-    await app.Services.MigrateIdentityAsync();
+    await app.Services.MigrateIdentityAsync(app.Configuration);
+    await app.Services.MigrateAndSeedMerchantsAsync();
 }
 
 app.UseMiddleware<ErrorEnvelopeMiddleware>();
 app.UseMiddleware<IdempotencyMiddleware>();
 app.UseSerilogRequestLogging();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapOpenApi();
 app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Itaris API v1"));

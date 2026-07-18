@@ -23,4 +23,28 @@ public sealed class User : Entity
     // PLACEHOLDER(doc04-Part8-clipped): email not visible in the clipped cell, but doc 05 A6
     // (owner login) authenticates with { email, password }, so the identity row needs one.
     public string? Email { get; set; }
+
+    /// <summary>active | inactive | locked. Owner-login lockout (doc 05 A6) rides on these two fields.</summary>
+    public string Status { get; set; } = UserStatuses.Active;
+
+    /// <summary>Consecutive failed password attempts (owner login). Reset to 0 on success.</summary>
+    public int FailedLoginAttempts { get; set; }
+
+    /// <summary>Set when lockout trips (doc 05 A6: 5 fails / 15 min → ACCOUNT_LOCKED).</summary>
+    public DateTimeOffset? LockedUntil { get; set; }
+}
+
+public static class UserTypes
+{
+    public const string Customer = "customer";
+    public const string Staff = "staff";
+    public const string Owner = "owner";
+    public const string PlatformAdmin = "platform_admin";
+}
+
+public static class UserStatuses
+{
+    public const string Active = "active";
+    public const string Inactive = "inactive";
+    public const string Locked = "locked";
 }

@@ -24,7 +24,11 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             b.Property(u => u.PhoneNumber).HasColumnName("phone_number").HasMaxLength(16);
             b.Property(u => u.Email).HasColumnName("email").HasMaxLength(256);
             b.Property(u => u.PasswordHash).HasColumnName("password_hash");
+            b.Property(u => u.Status).HasColumnName("status").HasMaxLength(16);
+            b.Property(u => u.FailedLoginAttempts).HasColumnName("failed_login_attempts");
+            b.Property(u => u.LockedUntil).HasColumnName("locked_until");
             b.HasIndex(u => u.PhoneNumber).IsUnique().HasFilter("phone_number IS NOT NULL");
+            b.HasIndex(u => u.Email).IsUnique().HasFilter("email IS NOT NULL");
         });
 
         modelBuilder.Entity<OtpChallenge>(b =>
@@ -47,6 +51,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             b.Property(t => t.UserId).HasColumnName("user_id");
             b.Property(t => t.DeviceId).HasColumnName("device_id");
             b.Property(t => t.TokenHash).HasColumnName("token_hash");
+            b.Property(t => t.ClaimsJson).HasColumnName("claims").HasColumnType("jsonb");
             b.Property(t => t.FamilyId).HasColumnName("family_id");
             b.Property(t => t.ExpiresAt).HasColumnName("expires_at");
             b.Property(t => t.ConsumedAt).HasColumnName("consumed_at");

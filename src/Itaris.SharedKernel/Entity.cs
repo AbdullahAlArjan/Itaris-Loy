@@ -8,7 +8,7 @@ namespace Itaris.SharedKernel;
 /// </summary>
 public abstract class Entity
 {
-    public Guid Id { get; protected init; } = Uuid.NewV7();
+    public Guid Id { get; init; } = Uuid.NewV7();
 
     public DateTimeOffset CreatedAt { get; set; }
 
