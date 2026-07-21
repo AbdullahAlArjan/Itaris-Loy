@@ -27,6 +27,10 @@ builder.Host.UseSerilog((context, configuration) => configuration
 var connectionString = builder.Configuration.GetConnectionString("Postgres")
     ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
 
+// JSON: enums as strings across the wire (doc 05 uses string values, not integers).
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+
 // Cross-cutting infrastructure
 builder.Services.AddItarisOpenTelemetry();
 builder.Services.AddItarisAuth(builder.Configuration);
@@ -38,7 +42,7 @@ builder.Services.AddSingleton<ISmsProvider, FakeSmsProvider>();
 builder.Services.AddIdentityModule(connectionString);
 builder.Services.AddCustomersModule();
 builder.Services.AddMerchantsModule(connectionString);
-builder.Services.AddLoyaltyModule();
+builder.Services.AddLoyaltyModule(connectionString);
 builder.Services.AddTransactionsModule();
 builder.Services.AddRewardsModule();
 builder.Services.AddOpsModule(connectionString);
@@ -77,6 +81,7 @@ if (app.Environment.IsDevelopment())
     await app.Services.MigrateIdentityAsync(app.Configuration);
     await app.Services.MigrateAndSeedMerchantsAsync();
     await app.Services.MigrateOpsAsync();
+    await app.Services.MigrateLoyaltyAsync();
 }
 
 app.UseMiddleware<ErrorEnvelopeMiddleware>();
