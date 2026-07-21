@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Itaris.SharedKernel\Itaris.SharedKernel.csproj" />
     <ProjectReference Include="..\..\src\Modules\Itaris.Modules.Identity\Itaris.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Itaris.Modules.Merchants\Itaris.Modules.Merchants.csproj" />
   </ItemGroup>
 
 </Project>

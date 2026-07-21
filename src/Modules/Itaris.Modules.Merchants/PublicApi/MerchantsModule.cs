@@ -20,9 +20,10 @@ public static class MerchantsModule
 {
     public static IServiceCollection AddMerchantsModule(this IServiceCollection services, string connectionString)
     {
-        services.AddDbContext<MerchantsDbContext>(options =>
+        services.AddDbContext<MerchantsDbContext>((sp, options) =>
             options.UseNpgsql(connectionString,
-                npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", MerchantsDbContext.Schema)));
+                    npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", MerchantsDbContext.Schema))
+                .AddInterceptors(sp.GetRequiredService<Itaris.Infrastructure.Auditing.AuditSaveChangesInterceptor>()));
 
         services.AddScoped<MerchantClaimsResolver>();
         services.AddScoped<CreateMerchantHandler>();

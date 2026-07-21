@@ -30,4 +30,10 @@ Tracks PostgreSQL schema/table state as migrations land, per doc 04 Part 8 (glob
 | `staff_roles` | Staff↔role, optionally branch-scoped | Migrated (Phase 2) |
 | `staff_invites` | Staff activation tokens (see decisions.md — moved from `identity` schema) | Migrated (Phase 2) |
 
+### `ops` schema (Phase 2)
+
+| Table | Purpose | Status |
+|---|---|---|
+| `audit_logs` | Append-only staff/admin action trail written by the EF audit interceptor (actor, entity, action, payload jsonb of changed column names; `merchant_id` null = platform action) | Migrated (Phase 2) |
+
 All other tables in doc 04 Part 8 (`customer_profiles`, `merchants`, `branches`, `staff_members`, `roles`, `permissions`, `loyalty_programs`, `transactions`, `points_ledger_entries`, `rewards`, `redemptions`, `refunds`, `idempotency_records`, `audit_logs`, `fraud_flags`, `notifications`, `integration_events`, `pos_providers`, `pos_connections`, `disputes`, `daily_*_stats`, `deletion_requests`) land with their owning module's phase (see doc 06 Part 12) and get an entry here when migrated — not before.

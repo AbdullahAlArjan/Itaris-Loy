@@ -1,5 +1,6 @@
 using Itaris.Api.Middleware;
 using Itaris.Infrastructure;
+using Itaris.Infrastructure.Auditing;
 using Itaris.Infrastructure.Auth;
 using Itaris.Infrastructure.Observability;
 using Itaris.Infrastructure.Sms;
@@ -29,6 +30,7 @@ var connectionString = builder.Configuration.GetConnectionString("Postgres")
 // Cross-cutting infrastructure
 builder.Services.AddItarisOpenTelemetry();
 builder.Services.AddItarisAuth(builder.Configuration);
+builder.Services.AddItarisAuditing();
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddSingleton<ISmsProvider, FakeSmsProvider>();
 
@@ -39,7 +41,7 @@ builder.Services.AddMerchantsModule(connectionString);
 builder.Services.AddLoyaltyModule();
 builder.Services.AddTransactionsModule();
 builder.Services.AddRewardsModule();
-builder.Services.AddOpsModule();
+builder.Services.AddOpsModule(connectionString);
 builder.Services.AddReportingModule();
 
 // OpenAPI with the three doc 05 audiences as JWT bearer schemes
@@ -74,6 +76,7 @@ if (app.Environment.IsDevelopment())
 {
     await app.Services.MigrateIdentityAsync(app.Configuration);
     await app.Services.MigrateAndSeedMerchantsAsync();
+    await app.Services.MigrateOpsAsync();
 }
 
 app.UseMiddleware<ErrorEnvelopeMiddleware>();

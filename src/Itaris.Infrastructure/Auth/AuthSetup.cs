@@ -35,6 +35,9 @@ public static class AuthSetup
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                // Keep our claim names verbatim ("sub", "merchant_id", …) instead of the legacy
+                // SOAP-style remapping, so ICurrentUser reads the same names JwtTokenService writes.
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
