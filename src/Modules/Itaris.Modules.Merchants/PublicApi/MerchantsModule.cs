@@ -27,6 +27,7 @@ public static class MerchantsModule
 
         services.AddScoped<MerchantClaimsResolver>();
         services.AddScoped<CreateMerchantHandler>();
+        services.AddScoped<SetMerchantStatusHandler>();
         services.AddScoped<OwnerLoginHandler>();
         services.AddScoped<InviteStaffHandler>();
         services.AddScoped<AcceptInviteHandler>();
@@ -93,6 +94,18 @@ public static class MerchantsModule
             .RequirePermission("admin.merchants.create")
             .Produces<CreateMerchantResponse>()
             .WithSummary("Admin creates a merchant (doc 05 C10)");
+
+        // doc 05 C10 — platform admin pauses / reactivates a merchant (e.g. unpaid subscription)
+        admin.MapPatch("/merchants/{merchantId:guid}", async (
+                Guid merchantId, SetMerchantStatusRequest request,
+                SetMerchantStatusHandler handler, CancellationToken ct) =>
+            {
+                var result = await handler.HandleAsync(merchantId, request, ct);
+                return Results.Ok(result.OrThrow());
+            })
+            .RequirePermission("admin.merchants.manage")
+            .Produces<SetMerchantStatusResponse>()
+            .WithSummary("Admin pauses/reactivates a merchant (doc 05 C10)");
 
         var merchant = endpoints.MapGroup("/v1/merchant").WithTags("Merchant management");
 

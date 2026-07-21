@@ -12,8 +12,9 @@ namespace Itaris.Modules.Identity.Features.AdminLogin;
 /// </summary>
 public sealed class AdminLoginHandler(IUserDirectory users, ITokenIssuer tokens)
 {
-    /// <summary>Permission granted to platform admins; gates the /v1/admin surface.</summary>
+    /// <summary>Permissions granted to platform admins; gate the /v1/admin surface.</summary>
     public const string AdminCreateMerchantPermission = "admin.merchants.create";
+    public const string AdminManageMerchantPermission = "admin.merchants.manage";
 
     public async Task<Result<AdminLoginResponse>> HandleAsync(
         AdminLoginRequest request, CancellationToken cancellationToken)
@@ -33,7 +34,7 @@ public sealed class AdminLoginHandler(IUserDirectory users, ITokenIssuer tokens)
 
         var pair = await tokens.IssueAsync(
             new TokenRequest(verify.UserId!.Value, Audience: "admin",
-                Permissions: [AdminCreateMerchantPermission]),
+                Permissions: [AdminCreateMerchantPermission, AdminManageMerchantPermission]),
             request.Device, cancellationToken);
 
         return Result<AdminLoginResponse>.Success(

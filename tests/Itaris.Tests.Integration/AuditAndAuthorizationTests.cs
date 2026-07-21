@@ -110,6 +110,40 @@ public class AuditAndAuthorizationTests(ApiFixture fixture)
     }
 
     [Fact]
+    public async Task Admin_can_pause_and_reactivate_a_merchant_and_it_is_audited()
+    {
+        var client = fixture.CreateClient();
+        var (merchant, _) = await CreateMerchantAsync(client);
+
+        Bearer(client, await AdminTokenAsync(client));
+
+        var pause = await client.PatchAsJsonAsync($"/v1/admin/merchants/{merchant.MerchantId}", new { status = "paused" });
+        Assert.Equal(HttpStatusCode.OK, pause.StatusCode);
+        var paused = await pause.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+        Assert.Equal("paused", paused!["status"].ToString());
+
+        var reactivate = await client.PatchAsJsonAsync($"/v1/admin/merchants/{merchant.MerchantId}", new { status = "active" });
+        Assert.Equal(HttpStatusCode.OK, reactivate.StatusCode);
+
+        using var scope = fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<Itaris.Modules.Ops.Persistence.OpsDbContext>();
+        var statusChanges = await db.AuditLogs.CountAsync(a =>
+            a.EntityType == "Merchant" && a.EntityId == merchant.MerchantId.ToString() && a.Action == "update");
+        Assert.True(statusChanges >= 2, "Expected audit rows for the pause and reactivate.");
+    }
+
+    [Fact]
+    public async Task Pausing_unknown_merchant_returns_merchant_not_found()
+    {
+        var client = fixture.CreateClient();
+        Bearer(client, await AdminTokenAsync(client));
+
+        var resp = await client.PatchAsJsonAsync($"/v1/admin/merchants/{Guid.NewGuid()}", new { status = "paused" });
+
+        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+    }
+
+    [Fact]
     public async Task Owner_token_missing_returns_401_on_gated_endpoint()
     {
         var client = fixture.CreateClient();
