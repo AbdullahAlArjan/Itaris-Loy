@@ -25,6 +25,7 @@ public static class MerchantsModule
                     npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", MerchantsDbContext.Schema))
                 .AddInterceptors(sp.GetRequiredService<Itaris.Infrastructure.Auditing.AuditSaveChangesInterceptor>()));
 
+        services.AddScoped<IMerchantGateway, MerchantGateway>();
         services.AddScoped<MerchantClaimsResolver>();
         services.AddScoped<CreateMerchantHandler>();
         services.AddScoped<SetMerchantStatusHandler>();

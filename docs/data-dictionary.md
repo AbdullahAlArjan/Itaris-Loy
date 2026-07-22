@@ -23,6 +23,16 @@ Tracks PostgreSQL schema/table state as migrations land, per doc 04 Part 8 (glob
 |---|---|---|
 | `customer_profiles` | Customer-specific data incl. shadow profiles; `user_id` (identity link), phone, first_name, gender, preferred_language, birth_date, `is_shadow`, `claimed_at`. Cashier-enrolled phone-only customers start `is_shadow=true` and are claimed on first real registration | Migrated (Customers module) |
 
+### `transactions` schema (Phase 4)
+
+| Table | Purpose | Status |
+|---|---|---|
+| `transactions` | Sales; merchant/branch/membership/staff, amount, status (completed/partially_refunded/refunded), refunded_amount, occurred/recorded, source, rule | Migrated (Phase 4) |
+| `transaction_items` | Line items — schema-ready, unused by MVP UI (doc 04) | Migrated (Phase 4) |
+| `points_ledger_entries` | Immutable source of truth for points/stamps; entry_type, points/stamps delta, balance_after, source_type/id, reason, created_by (append-only) | Migrated (Phase 4) |
+| `refunds` | Full/partial refunds; amount, points/stamps clawback, requested_by/approved_by | Migrated (Phase 4) |
+| `idempotency_records` | Replay protection (key = client key + route + actor); request_hash, response, expires_at. Also backs single-use QR nonces | Migrated (Phase 4) |
+
 ### `merchants` schema (Phase 2)
 
 | Table | Purpose | Status |

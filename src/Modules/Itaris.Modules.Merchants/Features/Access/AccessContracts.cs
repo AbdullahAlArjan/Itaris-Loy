@@ -8,7 +8,7 @@ public sealed record CreateMerchantRequest(
 
 public sealed record OwnerAccount(string Email, string Password);
 
-public sealed record CreateMerchantResponse(Guid MerchantId, string Code, Guid OwnerUserId);
+public sealed record CreateMerchantResponse(Guid MerchantId, string Code, Guid OwnerUserId, Guid DefaultBranchId);
 
 // doc 05 A6 — owner email/password login.
 public sealed record OwnerLoginRequest(string Email, string Password, DeviceRegistration Device);

@@ -26,6 +26,7 @@ public static class CustomersModule
             options.UseNpgsql(connectionString,
                 npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", CustomersDbContext.Schema)));
 
+        services.AddScoped<ICustomerDirectory, CustomerDirectory>();
         services.AddScoped<ProfileHandler>();
         services.AddScoped<EnrollHandler>();
         services.AddScoped<LookupHandler>();

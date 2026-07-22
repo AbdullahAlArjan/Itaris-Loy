@@ -71,6 +71,44 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options, IClock clock) 
     public string HashRefreshSecret(string secret) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(secret)));
 
+    public QrValidation ValidateQrToken(string qrPayload)
+    {
+        var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+        var parameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = _options.Issuer,
+            ValidateAudience = true,
+            ValidAudience = "qr",
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(5),
+        };
+
+        try
+        {
+            var principal = handler.ValidateToken(qrPayload, parameters, out var validated);
+            var jwt = (JwtSecurityToken)validated;
+            var sub = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (!Guid.TryParse(sub, out var customerId))
+            {
+                return new QrValidation(QrValidationStatus.Invalid, Guid.Empty, string.Empty, default);
+            }
+
+            return new QrValidation(
+                QrValidationStatus.Valid, customerId, jwt.Id, new DateTimeOffset(jwt.ValidTo, TimeSpan.Zero));
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            return new QrValidation(QrValidationStatus.Expired, Guid.Empty, string.Empty, default);
+        }
+        catch (Exception)
+        {
+            return new QrValidation(QrValidationStatus.Invalid, Guid.Empty, string.Empty, default);
+        }
+    }
+
     public string CreateQrToken(Guid customerId, int ttlSeconds)
     {
         var now = clock.UtcNow;
@@ -78,7 +116,11 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options, IClock clock) 
         var token = new JwtSecurityToken(
             issuer: _options.Issuer,
             audience: "qr",
-            claims: [new Claim(JwtRegisteredClaimNames.Sub, customerId.ToString())],
+            claims:
+            [
+                new Claim(JwtRegisteredClaimNames.Sub, customerId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Uuid.NewV7().ToString()), // single-use nonce
+            ],
             notBefore: now.UtcDateTime,
             expires: now.AddSeconds(ttlSeconds).UtcDateTime,
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));

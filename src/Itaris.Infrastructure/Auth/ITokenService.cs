@@ -19,4 +19,12 @@ public interface ITokenService
     /// Verifiable by the cashier resolve-qr flow (Phase 4) with the same signing key.
     /// </summary>
     string CreateQrToken(Guid customerId, int ttlSeconds);
+
+    /// <summary>Validates a QR payload; distinguishes expired from invalid (doc 05 D1 errors).</summary>
+    QrValidation ValidateQrToken(string qrPayload);
 }
+
+public enum QrValidationStatus { Valid, Expired, Invalid }
+
+/// <summary>Nonce is the token's jti — used by the resolver to enforce single use.</summary>
+public sealed record QrValidation(QrValidationStatus Status, Guid CustomerId, string Nonce, DateTimeOffset ExpiresAt);

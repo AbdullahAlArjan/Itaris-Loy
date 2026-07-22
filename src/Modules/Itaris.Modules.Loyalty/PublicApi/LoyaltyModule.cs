@@ -25,6 +25,7 @@ public static class LoyaltyModule
             options.UseNpgsql(connectionString,
                 npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", LoyaltyDbContext.Schema)));
 
+        services.AddScoped<ILoyaltyTransactionParticipant, Features.TransactionParticipation.LoyaltyTransactionParticipant>();
         services.AddScoped<CreateProgramHandler>();
         services.AddScoped<UpdateRulesHandler>();
         services.AddScoped<SetProgramStatusHandler>();

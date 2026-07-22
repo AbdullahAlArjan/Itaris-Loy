@@ -30,6 +30,17 @@ public sealed class CreateMerchantHandler(MerchantsDbContext db, IUserDirectory 
         };
         db.Merchants.Add(merchant);
 
+        // Every merchant starts with one branch so the cashier can record sales immediately
+        // (branch CRUD, doc 05 C6, remains for later — this is the default).
+        var branch = new Branch
+        {
+            MerchantId = merchant.Id,
+            NameAr = request.NameAr,
+            NameEn = request.NameEn,
+            IsActive = true,
+        };
+        db.Branches.Add(branch);
+
         var ownerStaff = new StaffMember
         {
             MerchantId = merchant.Id,
@@ -50,7 +61,7 @@ public sealed class CreateMerchantHandler(MerchantsDbContext db, IUserDirectory 
         await db.SaveChangesAsync(cancellationToken);
 
         return Result<CreateMerchantResponse>.Success(
-            new CreateMerchantResponse(merchant.Id, merchant.Code, ownerUserId));
+            new CreateMerchantResponse(merchant.Id, merchant.Code, ownerUserId, branch.Id));
     }
 
     private async Task<string> GenerateUniqueCodeAsync(string nameEn, CancellationToken cancellationToken)

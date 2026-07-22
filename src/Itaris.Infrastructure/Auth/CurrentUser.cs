@@ -21,6 +21,9 @@ public sealed class CurrentUser(IHttpContextAccessor accessor) : ICurrentUser
     public Guid? MerchantId =>
         Guid.TryParse(Principal?.FindFirstValue(ItarisClaims.MerchantId), out var id) ? id : null;
 
+    public Guid? StaffId =>
+        Guid.TryParse(Principal?.FindFirstValue(ItarisClaims.StaffId), out var id) ? id : null;
+
     public IReadOnlyList<Guid> BranchIds =>
         Principal?.FindAll(ItarisClaims.BranchId)
             .Select(c => Guid.TryParse(c.Value, out var id) ? id : Guid.Empty)

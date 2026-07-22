@@ -1,28 +1,34 @@
+using System.Security.Cryptography;
+
 namespace Itaris.Api.Middleware;
 
 /// <summary>
-/// Phase 1 SHELL for doc 05 idempotency: endpoints marked [IDEM] require an
-/// Idempotency-Key: &lt;uuid&gt; header; replays return the original response; a conflicting
-/// payload with the same key returns 409 IDEMPOTENCY_CONFLICT.
-///
-/// The real lock-or-replay store lives in the transactions schema
-/// (idempotency_records, doc 04 Part 8) and lands with the Transactions module (Phase 4).
-/// Until then this middleware only captures the header into HttpContext.Items so handlers
-/// and logs can see it — deliberately a no-op passthrough, per docs/decisions.md.
+/// Front half of doc 05 idempotency: for POSTs carrying an Idempotency-Key header, captures the
+/// key and a SHA-256 hash of the raw body into HttpContext.Items. The lock-or-replay logic lives
+/// in the Transactions module's IdempotencyFilter over transactions.idempotency_records
+/// (doc 04: the table belongs to the transactions schema).
 /// </summary>
 public sealed class IdempotencyMiddleware(RequestDelegate next)
 {
     public const string HeaderName = "Idempotency-Key";
-    public const string ItemKey = "IdempotencyKey";
+    public const string KeyItem = "IdempotencyKey";
+    public const string HashItem = "IdempotencyRequestHash";
 
-    public Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context)
     {
         if (HttpMethods.IsPost(context.Request.Method) &&
-            context.Request.Headers.TryGetValue(HeaderName, out var key))
+            context.Request.Headers.TryGetValue(HeaderName, out var key) &&
+            !string.IsNullOrWhiteSpace(key))
         {
-            context.Items[ItemKey] = key.ToString();
+            context.Items[KeyItem] = key.ToString();
+
+            context.Request.EnableBuffering();
+            using var sha = SHA256.Create();
+            var hash = await sha.ComputeHashAsync(context.Request.Body, context.RequestAborted);
+            context.Request.Body.Position = 0;
+            context.Items[HashItem] = Convert.ToHexString(hash);
         }
 
-        return next(context);
+        await next(context);
     }
 }

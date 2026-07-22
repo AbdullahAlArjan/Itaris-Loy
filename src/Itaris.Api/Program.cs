@@ -43,7 +43,7 @@ builder.Services.AddIdentityModule(connectionString);
 builder.Services.AddCustomersModule(connectionString);
 builder.Services.AddMerchantsModule(connectionString);
 builder.Services.AddLoyaltyModule(connectionString);
-builder.Services.AddTransactionsModule();
+builder.Services.AddTransactionsModule(connectionString);
 builder.Services.AddRewardsModule();
 builder.Services.AddOpsModule(connectionString);
 builder.Services.AddReportingModule();
@@ -83,6 +83,7 @@ if (app.Environment.IsDevelopment())
     await app.Services.MigrateAndSeedMerchantsAsync();
     await app.Services.MigrateOpsAsync();
     await app.Services.MigrateLoyaltyAsync();
+    await app.Services.MigrateTransactionsAsync();
 }
 
 app.UseMiddleware<ErrorEnvelopeMiddleware>();

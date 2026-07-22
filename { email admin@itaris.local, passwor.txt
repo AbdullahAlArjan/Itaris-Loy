@@ -1,0 +1,1 @@
+{ "email": "admin@itaris.local", "password": "dev-admin-pass-change-me", "device": {"platform":"web","model":null,"fcmToken":null} }

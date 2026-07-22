@@ -21,6 +21,7 @@ public interface ICurrentUser
     Guid? Id { get; }
     string? Audience { get; }
     Guid? MerchantId { get; }
+    Guid? StaffId { get; }
     IReadOnlyList<Guid> BranchIds { get; }
     IReadOnlyList<string> Permissions { get; }
 }

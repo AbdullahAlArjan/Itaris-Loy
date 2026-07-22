@@ -36,7 +36,8 @@ public static class ApiResults
             or ErrorCodes.AlreadyStaff or ErrorCodes.AlreadyMember or ErrorCodes.AlreadyReported
             or ErrorCodes.PhoneInUse or ErrorCodes.ProgramLimit
             or ErrorCodes.PendingRedemptionExists or ErrorCodes.RedemptionAlreadyUsed
-            or ErrorCodes.AlreadyFullyRefunded => 409,
+            or ErrorCodes.AlreadyFullyRefunded or ErrorCodes.RefundExceedsRemaining
+            or ErrorCodes.DuplicateSuspected => 409,
         ErrorCodes.OtpRateLimited or ErrorCodes.RateLimited => 429,
         ErrorCodes.ServerError => 500,
         _ => 400,
