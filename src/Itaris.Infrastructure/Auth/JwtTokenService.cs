@@ -70,4 +70,20 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options, IClock clock) 
 
     public string HashRefreshSecret(string secret) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(secret)));
+
+    public string CreateQrToken(Guid customerId, int ttlSeconds)
+    {
+        var now = clock.UtcNow;
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
+        var token = new JwtSecurityToken(
+            issuer: _options.Issuer,
+            audience: "qr",
+            claims: [new Claim(JwtRegisteredClaimNames.Sub, customerId.ToString())],
+            notBefore: now.UtcDateTime,
+            expires: now.AddSeconds(ttlSeconds).UtcDateTime,
+            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 }
+

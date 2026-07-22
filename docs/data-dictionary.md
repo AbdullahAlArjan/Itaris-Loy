@@ -17,6 +17,12 @@ Tracks PostgreSQL schema/table state as migrations land, per doc 04 Part 8 (glob
 | `refresh_tokens` | Rotating refresh tokens; Phase 2 added `claims` (jsonb snapshot for rotation) | Migrated (Phase 1–2) |
 | `devices` | Customer/staff devices, FCM tokens | Migrated (Phase 1) |
 
+### `customers` schema (Phase 3+)
+
+| Table | Purpose | Status |
+|---|---|---|
+| `customer_profiles` | Customer-specific data incl. shadow profiles; `user_id` (identity link), phone, first_name, gender, preferred_language, birth_date, `is_shadow`, `claimed_at`. Cashier-enrolled phone-only customers start `is_shadow=true` and are claimed on first real registration | Migrated (Customers module) |
+
 ### `merchants` schema (Phase 2)
 
 | Table | Purpose | Status |

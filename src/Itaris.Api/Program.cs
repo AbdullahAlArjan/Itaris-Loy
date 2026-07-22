@@ -40,7 +40,7 @@ builder.Services.AddSingleton<ISmsProvider, FakeSmsProvider>();
 
 // Modules (composition root only — doc 04 Part 7)
 builder.Services.AddIdentityModule(connectionString);
-builder.Services.AddCustomersModule();
+builder.Services.AddCustomersModule(connectionString);
 builder.Services.AddMerchantsModule(connectionString);
 builder.Services.AddLoyaltyModule(connectionString);
 builder.Services.AddTransactionsModule();
@@ -79,6 +79,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     await app.Services.MigrateIdentityAsync(app.Configuration);
+    await app.Services.MigrateCustomersAsync();
     await app.Services.MigrateAndSeedMerchantsAsync();
     await app.Services.MigrateOpsAsync();
     await app.Services.MigrateLoyaltyAsync();

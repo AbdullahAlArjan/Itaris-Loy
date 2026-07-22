@@ -14,6 +14,16 @@ public interface IUserDirectory
 
     Task<Guid> CreateStaffUserAsync(string? phoneOrEmail, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Idempotently returns the customer user for a phone number, creating one if absent
+    /// (used by cashier shadow enroll). A later OTP login for the same phone reuses this user,
+    /// so counter-earned memberships carry over automatically.
+    /// </summary>
+    Task<Guid> EnsureCustomerByPhoneAsync(string phoneNumber, CancellationToken cancellationToken);
+
+    /// <summary>Returns a user's phone number (null if none), for modules that need it by id.</summary>
+    Task<string?> GetPhoneAsync(Guid userId, CancellationToken cancellationToken);
+
     /// <summary>Verifies owner email/password, tracking lockout (doc 05 A6: 5 fails / 15 min → locked).</summary>
     Task<OwnerVerifyResult> VerifyOwnerAsync(string email, string password, CancellationToken cancellationToken);
 

@@ -40,6 +40,23 @@ public sealed class UserDirectory(IdentityDbContext db, ISecretHasher hasher, IC
         return user.Id;
     }
 
+    public async Task<Guid> EnsureCustomerByPhoneAsync(string phoneNumber, CancellationToken cancellationToken)
+    {
+        var existing = await db.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
+        if (existing is not null)
+        {
+            return existing.Id;
+        }
+
+        var user = new User { UserType = UserTypes.Customer, PhoneNumber = phoneNumber };
+        db.Users.Add(user);
+        await db.SaveChangesAsync(cancellationToken);
+        return user.Id;
+    }
+
+    public Task<string?> GetPhoneAsync(Guid userId, CancellationToken cancellationToken) =>
+        db.Users.Where(u => u.Id == userId).Select(u => u.PhoneNumber).FirstOrDefaultAsync(cancellationToken);
+
     public Task<OwnerVerifyResult> VerifyOwnerAsync(string email, string password, CancellationToken cancellationToken) =>
         VerifyByTypeAsync(email, password, UserTypes.Owner, cancellationToken);
 

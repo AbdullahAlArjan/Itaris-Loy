@@ -13,4 +13,10 @@ public interface ITokenService
 
     /// <summary>Stable hash of a refresh secret for storage/lookup.</summary>
     string HashRefreshSecret(string secret);
+
+    /// <summary>
+    /// A short-lived signed blob identifying a customer, for the rotating QR (doc 05 B3, 60s).
+    /// Verifiable by the cashier resolve-qr flow (Phase 4) with the same signing key.
+    /// </summary>
+    string CreateQrToken(Guid customerId, int ttlSeconds);
 }
