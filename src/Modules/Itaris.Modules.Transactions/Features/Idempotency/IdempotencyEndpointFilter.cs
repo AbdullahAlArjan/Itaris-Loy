@@ -1,9 +1,10 @@
 using System.Text.Json;
+using Itaris.Modules.Transactions.Features.Idempotency;
 using Itaris.SharedKernel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Itaris.Modules.Transactions.Features.Idempotency;
+namespace Itaris.Modules.Transactions.PublicApi;
 
 /// <summary>
 /// Wraps an [IDEM] endpoint (doc 05) with lock-or-replay. The key + request hash come from

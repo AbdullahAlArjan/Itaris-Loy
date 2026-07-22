@@ -28,6 +28,7 @@ public static class TransactionsModule
             options.UseNpgsql(connectionString,
                 npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", TransactionsDbContext.Schema)));
 
+        services.AddScoped<ILedgerWriter, Features.Ledger.LedgerWriter>();
         services.AddScoped<IdempotencyService>();
         services.AddScoped<IdempotencyEndpointFilter>();
         services.AddScoped<RecordSaleHandler>();

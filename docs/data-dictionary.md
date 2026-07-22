@@ -33,6 +33,13 @@ Tracks PostgreSQL schema/table state as migrations land, per doc 04 Part 8 (glob
 | `refunds` | Full/partial refunds; amount, points/stamps clawback, requested_by/approved_by | Migrated (Phase 4) |
 | `idempotency_records` | Replay protection (key = client key + route + actor); request_hash, response, expires_at. Also backs single-use QR nonces | Migrated (Phase 4) |
 
+### `rewards` schema (Phase 5)
+
+| Table | Purpose | Status |
+|---|---|---|
+| `rewards` | Reward catalog; cost_type (points/stamp_completion), points_cost, stock_remaining (null=unlimited), per_customer_limit, valid_from/until, status | Migrated (Phase 5) |
+| `redemptions` | Two-phase redemption; status (pending/completed/cancelled/expired), 6-char code, points_held, stamp_card_consumed, expires_at (5-min TTL), confirmed_at. Partial unique index = one pending per (customer, merchant) | Migrated (Phase 5) |
+
 ### `merchants` schema (Phase 2)
 
 | Table | Purpose | Status |

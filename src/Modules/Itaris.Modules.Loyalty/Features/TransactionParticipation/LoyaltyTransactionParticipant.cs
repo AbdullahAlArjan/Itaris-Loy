@@ -77,6 +77,60 @@ public sealed class LoyaltyTransactionParticipant(LoyaltyDbContext readDb, ICloc
         return new ReversalApplication(membership.PointsBalance, membership.StampsFilled);
     }
 
+    public async Task<HoldResult> ApplyRedemptionHoldAsync(
+        Guid membershipId, long pointsCost, bool consumeStampCard,
+        DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
+    {
+        await using var db = CreateEnlisted(connection);
+        await db.Database.UseTransactionAsync(transaction, cancellationToken);
+
+        var membership = await LockAsync(db, membershipId, cancellationToken);
+
+        if (consumeStampCard)
+        {
+            if (membership.StampCardCycle < 1)
+            {
+                return new HoldResult(HoldFailure.NoCompletedCard, membership.PointsBalance, membership.StampCardCycle);
+            }
+
+            membership.StampCardCycle--;
+        }
+        else
+        {
+            if (membership.PointsBalance < pointsCost)
+            {
+                return new HoldResult(HoldFailure.InsufficientPoints, membership.PointsBalance, membership.StampCardCycle);
+            }
+
+            membership.PointsBalance -= pointsCost;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        return new HoldResult(HoldFailure.None, membership.PointsBalance, membership.StampCardCycle);
+    }
+
+    public async Task ReleaseRedemptionHoldAsync(
+        Guid membershipId, long pointsRestore, bool restoreStampCard,
+        DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
+    {
+        await using var db = CreateEnlisted(connection);
+        await db.Database.UseTransactionAsync(transaction, cancellationToken);
+
+        var membership = await LockAsync(db, membershipId, cancellationToken);
+        membership.PointsBalance += pointsRestore;
+        if (restoreStampCard)
+        {
+            membership.StampCardCycle++;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    private static Task<CustomerMembership> LockAsync(LoyaltyDbContext db, Guid membershipId, CancellationToken ct) =>
+        db.Memberships
+            .FromSqlInterpolated($"SELECT *, xmin FROM loyalty.customer_memberships WHERE id = {membershipId} FOR UPDATE")
+            .FirstAsync(ct);
+
     public async Task<EarnApplication?> GetMembershipSnapshotAsync(
         Guid merchantId, Guid customerId, CancellationToken cancellationToken)
     {

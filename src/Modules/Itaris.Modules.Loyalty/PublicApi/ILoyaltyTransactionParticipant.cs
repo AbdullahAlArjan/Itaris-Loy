@@ -20,6 +20,10 @@ public sealed record EarnApplication(
 
 public sealed record ReversalApplication(long NewPointsBalance, int StampsFilled);
 
+public enum HoldFailure { None, InsufficientPoints, NoCompletedCard }
+
+public sealed record HoldResult(HoldFailure Failure, long NewPointsBalance, int NewCardCycle);
+
 public enum EarnFailure { None, ProgramInactive }
 
 public sealed record EarnOutcome(EarnApplication? Applied, EarnFailure Failure);
@@ -41,6 +45,20 @@ public interface ILoyaltyTransactionParticipant
     /// <summary>Applies a refund reversal (negative deltas). Balance may go negative (doc 06).</summary>
     Task<ReversalApplication> ApplyReversalAsync(
         Guid membershipId, long pointsDelta, int stampsDelta,
+        DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Holds a redemption cost under a membership row lock: deducts points (points reward) or consumes
+    /// one completed stamp card (stamp reward). Returns a failure if the balance/card is insufficient —
+    /// the INSUFFICIENT_POINTS / no-card check must happen under the lock (doc 06 out-of-stock/balance races).
+    /// </summary>
+    Task<HoldResult> ApplyRedemptionHoldAsync(
+        Guid membershipId, long pointsCost, bool consumeStampCard,
+        DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken);
+
+    /// <summary>Releases a redemption hold (cancel/expire): restores points and/or a completed card.</summary>
+    Task ReleaseRedemptionHoldAsync(
+        Guid membershipId, long pointsRestore, bool restoreStampCard,
         DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken);
 
     /// <summary>Resolves a customer's membership summary for a merchant (cashier identify flows). Read-only.</summary>
