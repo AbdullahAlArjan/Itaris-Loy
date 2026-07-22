@@ -31,6 +31,8 @@ public sealed class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
         // apps and loses to appsettings.json — a real local Postgres on 5432 would be hit instead.
         // Set here (not in ConfigureWebHost) so it is in place before any host is built.
         Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _postgres.GetConnectionString());
+        // Tests build their own worlds; never run the (slow) demo seed at test startup.
+        Environment.SetEnvironmentVariable("Seed__Demo", "false");
     }
 
     async Task IAsyncLifetime.DisposeAsync()

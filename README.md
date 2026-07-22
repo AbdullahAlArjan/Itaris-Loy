@@ -29,6 +29,21 @@ docker compose up
 
 Then open `http://localhost:8080/swagger`.
 
+### Demo data (Development only)
+
+On startup in Development (`Seed:Demo=true`, on by default) the API seeds the doc 05 mock world — idempotently — so every flow is clickable with realistic, non-zero data: **Washleh Roasters** (stamps) + **Reef Bakery** (points) + **Weibdeh Café** + **Lamsa Salon**, each with an owner, a cashier, an active program and a reward, plus customers and ~55 days of backdated transactions and a completed redemption.
+
+Sign in with any of these, then click **Authorize** in Swagger and paste the `accessToken`:
+
+| Role | How to log in |
+|---|---|
+| Platform admin | `POST /v1/auth/admin/login` — `admin@itaris.local` / `dev-admin-pass-change-me` |
+| Owner (Washleh) | `POST /v1/auth/owner/login` — `rana@washleh.itaris.local` / `DemoPass123!` |
+| Cashier (Washleh) | `POST /v1/auth/staff/login` — merchantCode `WASHLEH`, `omar@washleh.itaris.local`, PIN `1234` |
+| Customer (Layla) | `POST /v1/auth/otp/request` then `/verify` — phone `+962790000001`, code `000000` |
+
+Other owners: `reef@itaris.local`, `weibdeh@itaris.local`, `lamsa@itaris.local` (all `DemoPass123!`). See **Reef Bakery**'s analytics (`GET /v1/merchant/analytics/overview`) for non-zero points issued/redeemed.
+
 ## Tests
 
 ```

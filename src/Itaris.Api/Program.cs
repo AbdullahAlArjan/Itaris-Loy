@@ -37,6 +37,7 @@ builder.Services.AddItarisAuth(builder.Configuration);
 builder.Services.AddItarisAuditing();
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddSingleton<ISmsProvider, FakeSmsProvider>();
+builder.Services.AddScoped<Itaris.Api.Seeding.DemoSeeder>();
 
 // Modules (composition root only — doc 04 Part 7)
 builder.Services.AddIdentityModule(connectionString);
@@ -85,6 +86,13 @@ if (app.Environment.IsDevelopment())
     await app.Services.MigrateLoyaltyAsync();
     await app.Services.MigrateTransactionsAsync();
     await app.Services.MigrateRewardsAsync();
+
+    // Development demo data (doc 06 pilot-prep). Opt in via Seed:Demo; idempotent.
+    if (app.Configuration.GetValue<bool>("Seed:Demo"))
+    {
+        using var seedScope = app.Services.CreateScope();
+        await seedScope.ServiceProvider.GetRequiredService<Itaris.Api.Seeding.DemoSeeder>().SeedAsync();
+    }
 }
 
 app.UseMiddleware<ErrorEnvelopeMiddleware>();
