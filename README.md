@@ -6,7 +6,20 @@ Loyalty-program platform for Jordanian merchants (points/stamps, redemptions, PO
 
 ## Status
 
-Phase 0 + Phase 1 foundation: solution skeleton, 8 module shells (only Identity has real content — an OTP-request stub endpoint), EF Core wired to PostgreSQL, global error handling, OpenAPI/Swagger, structured logging, OpenTelemetry baseline, Docker Compose, and the three test projects (unit / integration / architecture). See [`docs/decisions.md`](docs/decisions.md) for what's frozen and why, and [`docs/api-contract.md`](docs/api-contract.md) for the API contract's source of truth.
+**Backend core complete (roadmap Phases 0–6).** All eight modules have real content:
+
+- **Identity** — phone OTP login, JWT + rotating refresh with reuse detection, owner/staff/admin login, staff invites.
+- **Merchants** — admin-created merchants, seeded roles + permission matrix, staff PIN, admin pause/reactivate.
+- **Customers** — profiles, phone-only (shadow) enroll + claim-on-registration, masked lookup, rotating QR, PDPL deletion request.
+- **Loyalty** — points/stamps programs with versioned rules, one-active enforcement, memberships, a pure preview calculator.
+- **Transactions** — the consistency core: atomic sale + immutable ledger + balance under a membership row lock, full/partial refunds with proportional clawback, real idempotency, QR resolve.
+- **Rewards** — reward catalog + stock, two-phase redemption (intent→confirm) with the double-redemption defense, TTL hold release.
+- **Ops** — EF audit interceptor + merchant audit-log read.
+- **Reporting** — the merchant analytics overview (the 5 numbers).
+
+Cross-cutting: permission-string authorization, global error envelope, OpenAPI/Swagger, Serilog, OpenTelemetry, Docker Compose, GitHub Actions CI. 115 tests (unit / architecture / integration) including the critical concurrency suites (20 concurrent sales, 20 parallel redemption confirms, idempotency replay, out-of-stock race).
+
+**Deferred (post-core / ops):** notifications + FCM, fraud-flag rules, disputes, phone-change, branch CRUD, offline batch sync, and the pilot-prep ops work (VPS deploy, Grafana, Bruno collection, runbook, seed script). See [`docs/decisions.md`](docs/decisions.md) for what's frozen and why.
 
 ## Running locally
 

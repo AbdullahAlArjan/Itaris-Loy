@@ -7,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Itaris.SharedKernel\Itaris.SharedKernel.csproj" />
     <ProjectReference Include="..\..\Itaris.Infrastructure\Itaris.Infrastructure.csproj" />
+    <ProjectReference Include="..\Itaris.Modules.Transactions\Itaris.Modules.Transactions.csproj" />
   </ItemGroup>
 
 </Project>

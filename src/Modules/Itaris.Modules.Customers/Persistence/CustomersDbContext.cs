@@ -10,6 +10,7 @@ public sealed class CustomersDbContext(DbContextOptions<CustomersDbContext> opti
     public const string Schema = "customers";
 
     public DbSet<CustomerProfile> Profiles => Set<CustomerProfile>();
+    public DbSet<DeletionRequest> DeletionRequests => Set<DeletionRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,6 +28,20 @@ public sealed class CustomersDbContext(DbContextOptions<CustomersDbContext> opti
             b.Property(p => p.ClaimedAt).HasColumnName("claimed_at");
             b.HasIndex(p => p.UserId).IsUnique();
             b.HasIndex(p => p.PhoneNumber);
+        });
+
+        modelBuilder.Entity<DeletionRequest>(b =>
+        {
+            b.ToTable("deletion_requests");
+            b.Property(d => d.Id).HasColumnName("id");
+            b.Property(d => d.UserId).HasColumnName("user_id");
+            b.Property(d => d.RequestedAt).HasColumnName("requested_at");
+            b.Property(d => d.ExecuteAfter).HasColumnName("execute_after");
+            b.Property(d => d.Status).HasColumnName("status").HasMaxLength(16);
+            b.Property(d => d.CancelledAt).HasColumnName("cancelled_at");
+            b.Property(d => d.ExecutedAt).HasColumnName("executed_at");
+            // One active (pending) deletion request per user.
+            b.HasIndex(d => d.UserId).IsUnique().HasFilter($"status = '{DeletionStatuses.Pending}'");
         });
 
         base.OnModelCreating(modelBuilder);

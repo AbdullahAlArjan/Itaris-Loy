@@ -29,6 +29,7 @@ public static class TransactionsModule
                 npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", TransactionsDbContext.Schema)));
 
         services.AddScoped<ILedgerWriter, Features.Ledger.LedgerWriter>();
+        services.AddScoped<ITransactionAnalytics, Features.Analytics.TransactionAnalytics>();
         services.AddScoped<IdempotencyService>();
         services.AddScoped<IdempotencyEndpointFilter>();
         services.AddScoped<RecordSaleHandler>();

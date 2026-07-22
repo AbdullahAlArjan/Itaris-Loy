@@ -22,6 +22,7 @@ Tracks PostgreSQL schema/table state as migrations land, per doc 04 Part 8 (glob
 | Table | Purpose | Status |
 |---|---|---|
 | `customer_profiles` | Customer-specific data incl. shadow profiles; `user_id` (identity link), phone, first_name, gender, preferred_language, birth_date, `is_shadow`, `claimed_at`. Cashier-enrolled phone-only customers start `is_shadow=true` and are claimed on first real registration | Migrated (Customers module) |
+| `deletion_requests` | PDPL account-deletion requests (Phase 6); 7-day grace (`execute_after`), status pending/cancelled/executed | Migrated (Phase 6) |
 
 ### `transactions` schema (Phase 4)
 

@@ -27,6 +27,7 @@ public static class CustomersModule
                 npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", CustomersDbContext.Schema)));
 
         services.AddScoped<ICustomerDirectory, CustomerDirectory>();
+        services.AddScoped<Features.Deletion.DeletionHandler>();
         services.AddScoped<ProfileHandler>();
         services.AddScoped<EnrollHandler>();
         services.AddScoped<LookupHandler>();
@@ -77,6 +78,30 @@ public static class CustomersModule
             .RequireAuthorization()
             .Produces<QrTokenResponse>()
             .WithSummary("Get my rotating QR token (doc 05 B3)");
+
+        // doc 05 B13 — PDPL account deletion (7-day grace)
+        me.MapPost("/deletion-request", async (
+                Features.Deletion.DeletionHandler handler, ICurrentUser user, CancellationToken ct) =>
+                Results.Ok((await handler.RequestAsync(RequireCustomer(user), ct)).OrThrow()))
+            .RequireAuthorization()
+            .Produces<Features.Deletion.DeletionRequestResponse>()
+            .WithSummary("Request account deletion (doc 05 B13, PDPL)");
+
+        me.MapGet("/deletion-request", async (
+                Features.Deletion.DeletionHandler handler, ICurrentUser user, CancellationToken ct) =>
+                Results.Ok((await handler.GetAsync(RequireCustomer(user), ct)).OrThrow()))
+            .RequireAuthorization()
+            .Produces<Features.Deletion.DeletionRequestResponse>()
+            .WithSummary("Get my deletion-request status (doc 05 B13)");
+
+        me.MapDelete("/deletion-request", async (
+                Features.Deletion.DeletionHandler handler, ICurrentUser user, CancellationToken ct) =>
+            {
+                (await handler.CancelAsync(RequireCustomer(user), ct)).OrThrow();
+                return Results.NoContent();
+            })
+            .RequireAuthorization()
+            .WithSummary("Cancel my deletion request within the grace period (doc 05 B13)");
 
         var pos = endpoints.MapGroup("/v1/pos/customers").WithTags("POS — customer identification");
 
